@@ -1,0 +1,1 @@
+insert into despesa(descricao, valor, data) values('teste', 100, '2020-01-01');
