@@ -1,0 +1,14 @@
+version: '3.1'
+services:
+  db:
+    image: mysql
+    container_name: mysql-finances
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3306:3306"
+    volumes:
+      - nevitoniuri_data:/var/lib/mysql
+
+volumes:
+  nevitoniuri_data:

@@ -1,5 +1,6 @@
 package com.nevitoniuri.financesapi.service;
 
+import com.nevitoniuri.financesapi.exception.BadRequestException;
 import com.nevitoniuri.financesapi.mapper.DespesaMapper;
 import com.nevitoniuri.financesapi.model.Despesa;
 import com.nevitoniuri.financesapi.model.dto.DespesaDTO;
@@ -32,5 +33,10 @@ public class DespesaService {
     public DespesaDTO salvarDespesa(DespesaDTO despesaDTO) {
         Despesa despesaSalva = despesaRepository.save(despesaMapper.toEntity(despesaDTO));
         return despesaMapper.toDTO(despesaSalva);
+    }
+
+    public DespesaDTO buscarPorId(Long id) {
+        return despesaMapper.toDTO(despesaRepository.findById(id)
+                .orElseThrow(() -> new BadRequestException("Despesa não encontrada")));
     }
 }
