@@ -1,8 +1,10 @@
 package com.nevitoniuri.financesapi.model.dto;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import javax.validation.constraints.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -12,17 +14,7 @@ import java.time.LocalDate;
 @Data
 public class DespesaDTO {
     private Long id;
-
-    @NotEmpty
-    @NotNull
     private String descricao;
-
-    @DecimalMin(value = "0.01", inclusive = false)
-    @NotNull
-    @Digits(integer = 10, fraction = 2)
     private BigDecimal valor;
-
-    @PastOrPresent
-    @NotNull
     private LocalDate data;
 }
