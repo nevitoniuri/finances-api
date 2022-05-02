@@ -4,6 +4,9 @@ import com.nevitoniuri.financesapi.controller.request.DespesaRequest;
 import com.nevitoniuri.financesapi.model.dto.DespesaDTO;
 import com.nevitoniuri.financesapi.service.DespesaService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -20,8 +23,9 @@ public class DespesaController {
     private final DespesaService despesaService;
 
     @GetMapping
-    public ResponseEntity<List<DespesaDTO>> listar(@RequestParam(required = false) String descricao) {
-        return ResponseEntity.ok(despesaService.listar(descricao));
+    public ResponseEntity<Page<DespesaDTO>> listar(@RequestParam(required = false) String descricao,
+                                                   @PageableDefault(page = 0, size = 10, sort = "descricao") Pageable pageable) {
+        return ResponseEntity.ok(despesaService.listar(descricao, pageable));
     }
 
     @GetMapping("{id}")

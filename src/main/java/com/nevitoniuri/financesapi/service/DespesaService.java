@@ -7,6 +7,9 @@ import com.nevitoniuri.financesapi.model.Despesa;
 import com.nevitoniuri.financesapi.model.dto.DespesaDTO;
 import com.nevitoniuri.financesapi.repository.DespesaRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,14 +26,15 @@ public class DespesaService {
     private static final DespesaMapper despesaMapper = INSTANCE;
     private final DespesaRepository despesaRepository;
 
-    public List<DespesaDTO> listar(String descricao) {
-        List<Despesa> despesas;
+    public Page<DespesaDTO> listar(String descricao, Pageable pageable) {
+        Page<Despesa> despesas;
         if (descricao == null) {
-            despesas = despesaRepository.findAll();
+            despesas = despesaRepository.findAll(pageable);
         } else {
-            despesas = despesaRepository.findByDescricaoContainingIgnoreCase(descricao);
+            despesas = despesaRepository.findByDescricaoContainingIgnoreCase(descricao, pageable);
         }
-        return despesas.stream().map(despesaMapper::toDTO).collect(Collectors.toList());
+        List<DespesaDTO> collect = despesas.stream().map(despesaMapper::toDTO).collect(Collectors.toList());
+        return new PageImpl<>(collect, pageable, despesas.getTotalElements());
     }
 
     public DespesaDTO salvar(DespesaRequest despesaRequest) {
