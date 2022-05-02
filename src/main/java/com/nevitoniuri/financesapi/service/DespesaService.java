@@ -41,11 +41,11 @@ public class DespesaService {
     }
 
     public DespesaDTO buscarPorId(Long id) throws DespesaNaoEncontradaException {
-        Despesa despesaBuscada = checaSeDespesaExistePorId(id);
+        Despesa despesaBuscada = checarSeExistePorId(id);
         return despesaMapper.toDTO(despesaBuscada);
     }
 
-    public Page<DespesaDTO> buscaPeloMesAno(Integer ano, Integer mes, Pageable pageable) {
+    public Page<DespesaDTO> buscarPeloAnoMes(Integer ano, Integer mes, Pageable pageable) {
         List<Despesa> despesasEncontradas = despesaRepository.findAll(pageable).getContent();
         List<Despesa> despesasDentroDoRangeDesejado = new ArrayList<>();
         for (Despesa despesaEncontrada : despesasEncontradas) {
@@ -60,14 +60,14 @@ public class DespesaService {
 
     @Transactional
     public DespesaDTO cadastrar(DespesaRequest despesaRequest) throws DespesaDuplicadaException {
-        checaSeDespesaExisteNoMesmoMes(despesaRequest);
+        checarSeExisteNoMesmoMes(despesaRequest);
         Despesa despesaSalva = despesaRepository.save(despesaMapper.toEntity(despesaRequest));
         return despesaMapper.toDTO(despesaSalva);
     }
 
     @Transactional
     public DespesaDTO atualizar(Long id, DespesaRequest despesaRequest) throws DespesaNaoEncontradaException {
-        Despesa despesaBuscada = checaSeDespesaExistePorId(id);
+        Despesa despesaBuscada = checarSeExistePorId(id);
         despesaBuscada.setDescricao(despesaRequest.getDescricao());
         despesaBuscada.setValor(despesaRequest.getValor());
         despesaBuscada.setData(despesaRequest.getData());
@@ -77,11 +77,11 @@ public class DespesaService {
 
     @Transactional
     public void deletar(Long id) throws DespesaNaoEncontradaException {
-        checaSeDespesaExistePorId(id);
+        checarSeExistePorId(id);
         despesaRepository.deleteById(id);
     }
 
-    private Despesa checaSeDespesaExistePorId(Long id) {
+    private Despesa checarSeExistePorId(Long id) {
         Optional<Despesa> despesaBuscada = despesaRepository.findById(id);
         if (despesaBuscada.isPresent()) {
             return despesaBuscada.get();
@@ -89,7 +89,7 @@ public class DespesaService {
         throw new DespesaNaoEncontradaException();
     }
 
-    private void checaSeDespesaExisteNoMesmoMes(DespesaRequest despesaRequest) {
+    private void checarSeExisteNoMesmoMes(DespesaRequest despesaRequest) {
         Optional<Despesa> despesaBuscada = despesaRepository.findByDescricaoIgnoreCase(despesaRequest.getDescricao());
         if (despesaBuscada.isPresent() && despesaBuscada.get().getData().getMonth() == despesaRequest.getData().getMonth()) {
             throw new DespesaDuplicadaException();

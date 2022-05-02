@@ -33,9 +33,9 @@ public class DespesaController {
     }
 
     @GetMapping("{ano}/{mes}")
-    public ResponseEntity<Page<DespesaDTO>> buscaPeloMesAno(@PathVariable Integer ano, @PathVariable Integer mes,
+    public ResponseEntity<Page<DespesaDTO>> buscarPeloAnoMes(@PathVariable Integer ano, @PathVariable Integer mes,
                                                             @PageableDefault(page = 0, size = 10, sort = "descricao") Pageable pageable) {
-        return ResponseEntity.ok(despesaService.buscaPeloMesAno(ano, mes, pageable));
+        return ResponseEntity.ok(despesaService.buscarPeloAnoMes(ano, mes, pageable));
     }
 
     @PostMapping
