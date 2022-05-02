@@ -62,7 +62,7 @@ public class DespesaService {
     @Transactional
     public void deletar(Long id) throws DespesaNaoEncontradaException {
         checaSeDespesaExistePorId(id);
-        despesaRepository.delete(buscarPorIdEntity(id));
+        despesaRepository.deleteById(id);
     }
 
     private Despesa checaSeDespesaExistePorId(Long id) {
@@ -78,10 +78,5 @@ public class DespesaService {
         if (despesaBuscada.isPresent() && despesaBuscada.get().getData().getMonth() == despesaRequest.getData().getMonth()) {
             throw new DespesaDuplicadaException();
         }
-    }
-
-    public Despesa buscarPorIdEntity(Long id) {
-        return despesaRepository.findById(id)
-                .orElseThrow(DespesaNaoEncontradaException::new);
     }
 }
