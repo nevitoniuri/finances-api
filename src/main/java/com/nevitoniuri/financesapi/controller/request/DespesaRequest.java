@@ -1,5 +1,6 @@
 package com.nevitoniuri.financesapi.controller.request;
 
+import com.nevitoniuri.financesapi.model.Categoria;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -22,4 +23,7 @@ public class DespesaRequest {
     @PastOrPresent
     @NotNull
     private LocalDate data;
+
+    @NotNull
+    private Categoria categoria;
 }

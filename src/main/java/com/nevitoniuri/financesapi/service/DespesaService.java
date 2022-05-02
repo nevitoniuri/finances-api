@@ -71,6 +71,7 @@ public class DespesaService {
         despesaBuscada.setDescricao(despesaRequest.getDescricao());
         despesaBuscada.setValor(despesaRequest.getValor());
         despesaBuscada.setData(despesaRequest.getData());
+        despesaBuscada.setCategoria(despesaRequest.getCategoria());
         return despesaMapper.toDTO(despesaRepository.saveAndFlush(despesaBuscada));
     }
 

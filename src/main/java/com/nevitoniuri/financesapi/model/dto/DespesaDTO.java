@@ -1,5 +1,6 @@
 package com.nevitoniuri.financesapi.model.dto;
 
+import com.nevitoniuri.financesapi.model.Categoria;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,4 +18,5 @@ public class DespesaDTO {
     private String descricao;
     private BigDecimal valor;
     private LocalDate data;
+    private Categoria categoria;
 }
