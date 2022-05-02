@@ -14,6 +14,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -28,14 +30,14 @@ public class DespesaService {
     private final DespesaRepository despesaRepository;
 
     public Page<DespesaDTO> listar(String descricao, Pageable pageable) {
-        Page<Despesa> despesas;
+        List<Despesa> despesas;
         if (descricao == null) {
-            despesas = despesaRepository.findAll(pageable);
+            despesas = despesaRepository.findAll(pageable).getContent();
         } else {
-            despesas = despesaRepository.findByDescricaoContainingIgnoreCase(descricao, pageable);
+            despesas = despesaRepository.findByDescricaoContainingIgnoreCase(descricao, pageable).getContent();
         }
         List<DespesaDTO> collect = despesas.stream().map(despesaMapper::toDTO).collect(Collectors.toList());
-        return new PageImpl<>(collect, pageable, despesas.getTotalElements());
+        return new PageImpl<>(collect, pageable, despesas.size());
     }
 
     public DespesaDTO buscarPorId(Long id) throws DespesaNaoEncontradaException {
@@ -43,8 +45,21 @@ public class DespesaService {
         return despesaMapper.toDTO(despesaBuscada);
     }
 
+    public Page<DespesaDTO> buscaPeloMesAno(Integer ano, Integer mes, Pageable pageable) {
+        List<Despesa> despesasEncontradas = despesaRepository.findAll(pageable).getContent();
+        List<Despesa> despesasDentroDoRangeDesejado = new ArrayList<>();
+        for (Despesa despesaEncontrada : despesasEncontradas) {
+            LocalDate despesa = despesaEncontrada.getData();
+            if (despesa.getYear() == ano && despesa.getMonthValue() == mes) {
+                despesasDentroDoRangeDesejado.add(despesaEncontrada);
+            }
+        }
+        List<DespesaDTO> collect = despesasDentroDoRangeDesejado.stream().map(despesaMapper::toDTO).collect(Collectors.toList());
+        return new PageImpl<>(collect, pageable, despesasDentroDoRangeDesejado.size());
+    }
+
     @Transactional
-    public DespesaDTO salvar(DespesaRequest despesaRequest) throws DespesaDuplicadaException {
+    public DespesaDTO cadastrar(DespesaRequest despesaRequest) throws DespesaDuplicadaException {
         checaSeDespesaExisteNoMesmoMes(despesaRequest);
         Despesa despesaSalva = despesaRepository.save(despesaMapper.toEntity(despesaRequest));
         return despesaMapper.toDTO(despesaSalva);

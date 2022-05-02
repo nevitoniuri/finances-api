@@ -13,7 +13,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.validation.Valid;
 import java.net.URI;
-import java.util.List;
 
 @RestController
 @RequestMapping("despesas")
@@ -33,10 +32,16 @@ public class DespesaController {
         return ResponseEntity.ok(despesaService.buscarPorId(id));
     }
 
+    @GetMapping("{ano}/{mes}")
+    public ResponseEntity<Page<DespesaDTO>> buscaPeloMesAno(@PathVariable Integer ano, @PathVariable Integer mes,
+                                                            @PageableDefault(page = 0, size = 10, sort = "descricao") Pageable pageable) {
+        return ResponseEntity.ok(despesaService.buscaPeloMesAno(ano, mes, pageable));
+    }
+
     @PostMapping
-    public ResponseEntity<DespesaDTO> salvar(@RequestBody @Valid DespesaRequest despesaRequest,
-                                             UriComponentsBuilder uriComponentsBuilder) {
-        DespesaDTO despesaSalva = despesaService.salvar(despesaRequest);
+    public ResponseEntity<DespesaDTO> cadastrar(@RequestBody @Valid DespesaRequest despesaRequest,
+                                                UriComponentsBuilder uriComponentsBuilder) {
+        DespesaDTO despesaSalva = despesaService.cadastrar(despesaRequest);
         URI uri = uriComponentsBuilder.path("/despesas/{id}").buildAndExpand(despesaSalva.getId()).toUri();
         return ResponseEntity.created(uri).body(despesaSalva);
     }
