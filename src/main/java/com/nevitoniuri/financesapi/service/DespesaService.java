@@ -1,7 +1,8 @@
 package com.nevitoniuri.financesapi.service;
 
 import com.nevitoniuri.financesapi.controller.request.DespesaRequest;
-import com.nevitoniuri.financesapi.exception.BadRequestException;
+import com.nevitoniuri.financesapi.exception.DespesaDuplicadaException;
+import com.nevitoniuri.financesapi.exception.DespesaNaoEncontradaException;
 import com.nevitoniuri.financesapi.mapper.DespesaMapper;
 import com.nevitoniuri.financesapi.model.Despesa;
 import com.nevitoniuri.financesapi.model.dto.DespesaDTO;
@@ -11,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,7 +24,6 @@ import static com.nevitoniuri.financesapi.mapper.DespesaMapper.INSTANCE;
 @RequiredArgsConstructor
 public class DespesaService {
 
-    private static final String NAO_ENCONTRADO = "Despesa não encontrada";
     private static final DespesaMapper despesaMapper = INSTANCE;
     private final DespesaRepository despesaRepository;
 
@@ -37,41 +38,50 @@ public class DespesaService {
         return new PageImpl<>(collect, pageable, despesas.getTotalElements());
     }
 
-    public DespesaDTO salvar(DespesaRequest despesaRequest) {
-        if (isExistente(despesaRequest.getDescricao())) {
-            throw new BadRequestException("Despesa já cadastrada");
-        }
+    public DespesaDTO buscarPorId(Long id) throws DespesaNaoEncontradaException {
+        Despesa despesaBuscada = checaSeDespesaExistePorId(id);
+        return despesaMapper.toDTO(despesaBuscada);
+    }
+
+    @Transactional
+    public DespesaDTO salvar(DespesaRequest despesaRequest) throws DespesaDuplicadaException {
+        checaSeDespesaExisteNoMesmoMes(despesaRequest);
         Despesa despesaSalva = despesaRepository.save(despesaMapper.toEntity(despesaRequest));
         return despesaMapper.toDTO(despesaSalva);
     }
 
-    public DespesaDTO atualizar(Long id, DespesaRequest despesaRequest) {
+    @Transactional
+    public DespesaDTO atualizar(Long id, DespesaRequest despesaRequest) throws DespesaNaoEncontradaException {
+        Despesa despesaBuscada = checaSeDespesaExistePorId(id);
+        despesaBuscada.setDescricao(despesaRequest.getDescricao());
+        despesaBuscada.setValor(despesaRequest.getValor());
+        despesaBuscada.setData(despesaRequest.getData());
+        return despesaMapper.toDTO(despesaRepository.saveAndFlush(despesaBuscada));
+    }
+
+    @Transactional
+    public void deletar(Long id) throws DespesaNaoEncontradaException {
+        checaSeDespesaExistePorId(id);
+        despesaRepository.delete(buscarPorIdEntity(id));
+    }
+
+    private Despesa checaSeDespesaExistePorId(Long id) {
         Optional<Despesa> despesaBuscada = despesaRepository.findById(id);
         if (despesaBuscada.isPresent()) {
-            despesaBuscada.get().setDescricao(despesaRequest.getDescricao());
-            despesaBuscada.get().setValor(despesaRequest.getValor());
-            despesaBuscada.get().setData(despesaRequest.getData());
-            return despesaMapper.toDTO(despesaRepository.saveAndFlush(despesaBuscada.get()));
-        } else {
-            throw new BadRequestException(NAO_ENCONTRADO);
+            return despesaBuscada.get();
         }
+        throw new DespesaNaoEncontradaException();
     }
 
-    public boolean isExistente(String descricao) {
-        return despesaRepository.existsByDescricao(descricao);
-    }
-
-    public DespesaDTO buscarPorIdToDTO(Long id) {
-        return despesaMapper.toDTO(despesaRepository.findById(id)
-                .orElseThrow(() -> new BadRequestException(NAO_ENCONTRADO)));
+    private void checaSeDespesaExisteNoMesmoMes(DespesaRequest despesaRequest) {
+        Optional<Despesa> despesaBuscada = despesaRepository.findByDescricaoIgnoreCase(despesaRequest.getDescricao());
+        if (despesaBuscada.isPresent() && despesaBuscada.get().getData().getMonth() == despesaRequest.getData().getMonth()) {
+            throw new DespesaDuplicadaException();
+        }
     }
 
     public Despesa buscarPorIdEntity(Long id) {
         return despesaRepository.findById(id)
-                .orElseThrow(() -> new BadRequestException(NAO_ENCONTRADO));
-    }
-
-    public void deletar(Long id) {
-        despesaRepository.delete(buscarPorIdEntity(id));
+                .orElseThrow(DespesaNaoEncontradaException::new);
     }
 }

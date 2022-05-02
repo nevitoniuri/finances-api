@@ -30,7 +30,7 @@ public class DespesaController {
 
     @GetMapping("{id}")
     public ResponseEntity<DespesaDTO> buscarPorId(@PathVariable Long id) {
-        return ResponseEntity.ok(despesaService.buscarPorIdToDTO(id));
+        return ResponseEntity.ok(despesaService.buscarPorId(id));
     }
 
     @PostMapping
