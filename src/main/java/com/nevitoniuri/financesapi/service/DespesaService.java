@@ -67,4 +67,7 @@ public class DespesaService {
                 .orElseThrow(() -> new BadRequestException(NAO_ENCONTRADO));
     }
 
+    public void deletar(Long id) {
+        despesaRepository.delete(buscarPorIdEntity(id));
+    }
 }

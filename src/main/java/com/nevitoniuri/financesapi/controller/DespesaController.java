@@ -4,7 +4,6 @@ import com.nevitoniuri.financesapi.controller.request.DespesaRequest;
 import com.nevitoniuri.financesapi.model.dto.DespesaDTO;
 import com.nevitoniuri.financesapi.service.DespesaService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -40,8 +39,14 @@ public class DespesaController {
 
     @PutMapping("{id}")
     public ResponseEntity<DespesaDTO> atualizar(@PathVariable Long id,
-                                    @RequestBody @Valid DespesaRequest despesaRequest) {
+                                                @RequestBody @Valid DespesaRequest despesaRequest) {
         return ResponseEntity.ok(despesaService.atualizar(id, despesaRequest));
+    }
+
+    @DeleteMapping("{id}")
+    public ResponseEntity<Void> deletar(@PathVariable Long id) {
+        despesaService.deletar(id);
+        return ResponseEntity.noContent().build();
     }
 
 }
