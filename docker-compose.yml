@@ -1,14 +1,24 @@
 version: '3.1'
 services:
-  db:
-    image: mysql
-    container_name: mysql-finances
+  mysql-standalone:
+    image: mysql:5.7
     environment:
+      MYSQL_PASSWORD: root
+      MYSQL_DATABASE: finances
       MYSQL_ROOT_PASSWORD: root
     ports:
       - "3306:3306"
-    volumes:
-      - nevitoniuri_data:/var/lib/mysql
 
-volumes:
-  nevitoniuri_data:
+  springboot-docker-container:
+    image: springboot-docker-container
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-standalone:3306/finances?autoReconnect=true&useSSL=false
+      SPRING_DATASOURCE_USERNAME: "root"
+      SPRING_DATASOURCE_PASSWORD: "root"
+    build:
+      context: "./"
+      dockerfile: "Dockerfile"
+    depends_on:
+      - mysql-standalone

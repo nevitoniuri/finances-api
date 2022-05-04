@@ -29,7 +29,7 @@ da Alura. Essa API é responsável por realizar controle financeiro de forma sim
 ✔️ Capaz de gerar um **resumo mensal** com o total das receitas, despesas, **saldo final** e o **total gasto por categoria**.
 
 ## O que ainda será desenvolvido?
-
+📝 Implementar testes unitários\
 📝 Adicionar o controle de acesso (autenticação e autorização)\
 📝 Realizar o deploy da API no Heroku
 
