@@ -16,6 +16,9 @@
 Essa é uma API RESTful desenvolvida como desafio para praticar e aprender sobre backend, através do Challenge Backend
 da Alura. Essa API é responsável por realizar controle financeiro de forma simples.
 
+## Confira o Deploy da aplicação
+[HEROKU](https://finances-api-nevitoniuri.herokuapp.com/swagger-ui/index.html)
+
 ## Desafios sugeridos
 * API com rotas implementadas seguindo as boas práticas do modelo REST 
 * Validações feitas conforme as regras de negócio
@@ -26,12 +29,13 @@ da Alura. Essa API é responsável por realizar controle financeiro de forma sim
 
 ✔️ Capaz de adicionar, consultar, atualizar e deletar **Despesas**.\
 ✔️ Capaz de adicionar, consultar, atualizar e deletar **Receitas**.\
-✔️ Capaz de gerar um **resumo mensal** com o total das receitas, despesas, **saldo final** e o **total gasto por categoria**.
+✔️ Gera um **resumo mensal** com o total das receitas, despesas, **saldo final** e o **total gasto por categoria**.\
+✔️ Deploy da API no Heroku.
 
 ## O que ainda será desenvolvido?
 
 📝 Adicionar o controle de acesso (autenticação e autorização)\
-📝 Realizar o deploy da API no Heroku
+📝 Melhorar a documentação da API
 
 ## Rodando a aplicação ▶️
 #### Requisitos
