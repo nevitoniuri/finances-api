@@ -1,6 +1,5 @@
 package com.nevitoniuri.financesapi.service;
 
-import com.nevitoniuri.financesapi.controller.request.DespesaRequest;
 import com.nevitoniuri.financesapi.exception.DespesaDuplicadaException;
 import com.nevitoniuri.financesapi.exception.DespesaNaoEncontradaException;
 import com.nevitoniuri.financesapi.mapper.DespesaMapper;
@@ -38,40 +37,29 @@ public class DespesaService {
         if (descricao == null) {
             despesas = despesaRepository.findAll(pageable);
         } else {
-            despesas = despesaRepository.findByDescricaoContainingIgnoreCase(descricao, pageable);
+            despesas = despesaRepository.findByDescricaoContainingIgnoreCase(descricao.trim(), pageable);
         }
         return despesas;
     }
 
     public Page<DespesaDTO> buscarPeloAnoMes(Integer ano, Integer mes, Pageable pageable) {
-        List<Despesa> despesasEncontradas = despesaRepository.findAll(pageable).getContent();
-        List<Despesa> despesasDentroDoRangeDesejado = new ArrayList<>();
-        for (Despesa despesaEncontrada : despesasEncontradas) {
-            LocalDate despesa = despesaEncontrada.getData();
-            if (despesa.getYear() == ano && despesa.getMonthValue() == mes) {
-                despesasDentroDoRangeDesejado.add(despesaEncontrada);
+        List<Despesa> despesas = despesaRepository.findAll(pageable).getContent();
+        List<Despesa> despesasAnoMes = new ArrayList<>();
+
+        despesas.forEach(despesa -> {
+            LocalDate despesaData = despesa.getData();
+            if (despesaData.getYear() == ano && despesaData.getMonthValue() == mes) {
+                despesasAnoMes.add(despesa);
             }
-        }
-        List<DespesaDTO> collect = despesasDentroDoRangeDesejado.stream().map(despesaMapper::toDTO).collect(Collectors.toList());
-        return new PageImpl<>(collect, pageable, despesasDentroDoRangeDesejado.size());
+        });
+        List<DespesaDTO> collect = despesasAnoMes.stream().map(despesaMapper::toDTO).collect(Collectors.toList());
+        return new PageImpl<>(collect, pageable, despesasAnoMes.size());
     }
 
     @Transactional
-    public Despesa cadastrar(Despesa despesa) throws DespesaDuplicadaException {
-        if (existeNoMesmoMes(despesa)) {
-            throw new DespesaDuplicadaException();
-        }
+    public Despesa salvar(Despesa despesa) {
+        existeNoMesmoMes(despesa);
         return despesaRepository.save(despesa);
-    }
-
-    @Transactional
-    public DespesaDTO atualizar(Long id, DespesaRequest despesaRequest) throws DespesaNaoEncontradaException {
-        Despesa despesaBuscada = buscarPorId(id);
-        despesaBuscada.setDescricao(despesaRequest.getDescricao());
-        despesaBuscada.setValor(despesaRequest.getValor());
-        despesaBuscada.setData(despesaRequest.getData());
-        despesaBuscada.setCategoria(despesaRequest.getCategoria());
-        return despesaMapper.toDTO(despesaRepository.saveAndFlush(despesaBuscada));
     }
 
     @Transactional
@@ -79,8 +67,20 @@ public class DespesaService {
         despesaRepository.delete(buscarPorId(id));
     }
 
-    private boolean existeNoMesmoMes(Despesa despesa) {
-        Optional<Despesa> despesaBuscada = despesaRepository.findByDescricaoIgnoreCase(despesa.getDescricao());
-        return despesaBuscada.isPresent() && (despesaBuscada.get().getData().getMonth() == despesa.getData().getMonth());
+    private void existeNoMesmoMes(Despesa despesa) {
+        Optional<List<Despesa>> despesas = despesaRepository.findByDescricaoIgnoreCase(despesa.getDescricao());
+
+        despesas.ifPresent(despesasDoMes -> despesasDoMes.forEach(despesaDoMes -> {
+            if (despesaDoMes == despesa) {
+                throw new DespesaDuplicadaException();
+            }
+        }));
+
+//        despesas.ifPresent(despesaList -> despesaList.forEach(despesaExistente -> {
+//            LocalDate data = despesaExistente.getData();
+//            if (data.getYear() == despesa.getData().getYear() && data.getMonthValue() == despesa.getData().getMonthValue()) {
+//                throw new DespesaDuplicadaException();
+//            }
+//        }));
     }
 }

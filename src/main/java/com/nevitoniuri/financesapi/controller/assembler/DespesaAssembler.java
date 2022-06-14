@@ -9,11 +9,15 @@ import org.springframework.stereotype.Component;
 public class DespesaAssembler implements Assemblable<DespesaRequest, Despesa> {
     @Override
     public Despesa toEntity(DespesaRequest request) {
-        return Despesa.builder()
-                .descricao(request.getDescricao())
-                .valor(request.getValor())
-                .data(request.getData())
-                .categoria(request.getCategoria())
-                .build();
+        var despesa = new Despesa();
+        copyToEntity(request, despesa);
+        return despesa;
+    }
+
+    public void copyToEntity(DespesaRequest request, Despesa entity) {
+        entity.setDescricao(request.getDescricao());
+        entity.setValor(request.getValor());
+        entity.setData(request.getData());
+        entity.setCategoria(request.getCategoria());
     }
 }

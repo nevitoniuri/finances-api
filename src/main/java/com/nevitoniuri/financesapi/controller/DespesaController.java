@@ -3,7 +3,7 @@ package com.nevitoniuri.financesapi.controller;
 import com.nevitoniuri.financesapi.controller.assembler.DespesaAssembler;
 import com.nevitoniuri.financesapi.controller.disassembler.DespesaDisassembler;
 import com.nevitoniuri.financesapi.controller.request.DespesaRequest;
-import com.nevitoniuri.financesapi.mapper.DespesaMapper;
+import com.nevitoniuri.financesapi.model.Despesa;
 import com.nevitoniuri.financesapi.model.dto.DespesaDTO;
 import com.nevitoniuri.financesapi.service.DespesaService;
 import com.nevitoniuri.financesapi.util.RecursoCriado;
@@ -17,8 +17,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
-import static com.nevitoniuri.financesapi.mapper.DespesaMapper.INSTANCE;
-
 @RestController
 @RequestMapping("despesas")
 @RequiredArgsConstructor
@@ -27,11 +25,10 @@ public class DespesaController {
     private final DespesaService despesaService;
     private final DespesaAssembler despesaAssembler;
     private final DespesaDisassembler despesaDisassembler;
-    private static final DespesaMapper despesaMapper = INSTANCE;
 
     @GetMapping("{id}")
     public DespesaDTO buscarPorId(@PathVariable Long id) {
-        return despesaMapper.toDTO(despesaService.buscarPorId(id));
+        return despesaDisassembler.toDTO(despesaService.buscarPorId(id));
     }
 
     @GetMapping
@@ -48,14 +45,17 @@ public class DespesaController {
 
     @PostMapping
     public ResponseEntity<Void> cadastrar(@RequestBody @Valid DespesaRequest despesaRequest) {
-        var despesaSalva = despesaService.cadastrar(despesaAssembler.toEntity(despesaRequest));
+        var despesaSalva = despesaService.salvar(despesaAssembler.toEntity(despesaRequest));
         return ResponseEntity.created(RecursoCriado.location(despesaSalva.getId())).build();
     }
 
     @PutMapping("{id}")
-    public ResponseEntity<DespesaDTO> atualizar(@PathVariable Long id,
-                                                @RequestBody @Valid DespesaRequest despesaRequest) {
-        return ResponseEntity.ok(despesaService.atualizar(id, despesaRequest));
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void atualizar(@PathVariable Long id,
+                          @RequestBody @Valid DespesaRequest despesaRequest) {
+        Despesa despesa = despesaService.buscarPorId(id);
+        despesaAssembler.copyToEntity(despesaRequest, despesa);
+        despesaService.salvar(despesa);
     }
 
     @DeleteMapping("{id}")
