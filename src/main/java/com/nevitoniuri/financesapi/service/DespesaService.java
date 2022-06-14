@@ -58,7 +58,7 @@ public class DespesaService {
 
     @Transactional
     public Despesa salvar(Despesa despesa) {
-        existeNoMesmoMes(despesa);
+        existeNoMesmoMesAno(despesa);
         return despesaRepository.save(despesa);
     }
 
@@ -67,20 +67,13 @@ public class DespesaService {
         despesaRepository.delete(buscarPorId(id));
     }
 
-    private void existeNoMesmoMes(Despesa despesa) {
+    private void existeNoMesmoMesAno(Despesa despesa) {
         Optional<List<Despesa>> despesas = despesaRepository.findByDescricaoIgnoreCase(despesa.getDescricao());
-
-        despesas.ifPresent(despesasDoMes -> despesasDoMes.forEach(despesaDoMes -> {
-            if (despesaDoMes == despesa) {
+        despesas.ifPresent(despesasList -> despesasList.forEach(despesaList -> {
+            LocalDate data = despesaList.getData();
+            if (data.getYear() == despesa.getData().getYear() && data.getMonthValue() == despesa.getData().getMonthValue()) {
                 throw new DespesaDuplicadaException();
             }
         }));
-
-//        despesas.ifPresent(despesaList -> despesaList.forEach(despesaExistente -> {
-//            LocalDate data = despesaExistente.getData();
-//            if (data.getYear() == despesa.getData().getYear() && data.getMonthValue() == despesa.getData().getMonthValue()) {
-//                throw new DespesaDuplicadaException();
-//            }
-//        }));
     }
 }
