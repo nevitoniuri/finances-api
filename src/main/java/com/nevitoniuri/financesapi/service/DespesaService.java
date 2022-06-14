@@ -29,20 +29,18 @@ public class DespesaService {
     private static final DespesaMapper despesaMapper = INSTANCE;
     private final DespesaRepository despesaRepository;
 
-    public Page<DespesaDTO> listar(String descricao, Pageable pageable) {
-        List<Despesa> despesas;
-        if (descricao == null) {
-            despesas = despesaRepository.findAll(pageable).getContent();
-        } else {
-            despesas = despesaRepository.findByDescricaoContainingIgnoreCase(descricao, pageable).getContent();
-        }
-        List<DespesaDTO> collect = despesas.stream().map(despesaMapper::toDTO).collect(Collectors.toList());
-        return new PageImpl<>(collect, pageable, despesas.size());
+    public Despesa buscarPorId(Long id) {
+        return despesaRepository.findById(id).orElseThrow(DespesaNaoEncontradaException::new);
     }
 
-    public DespesaDTO buscarPorId(Long id) throws DespesaNaoEncontradaException {
-        Despesa despesaBuscada = checarSeExistePorId(id);
-        return despesaMapper.toDTO(despesaBuscada);
+    public Page<Despesa> listar(String descricao, Pageable pageable) {
+        Page<Despesa> despesas;
+        if (descricao == null) {
+            despesas = despesaRepository.findAll(pageable);
+        } else {
+            despesas = despesaRepository.findByDescricaoContainingIgnoreCase(descricao, pageable);
+        }
+        return despesas;
     }
 
     public Page<DespesaDTO> buscarPeloAnoMes(Integer ano, Integer mes, Pageable pageable) {
@@ -59,15 +57,16 @@ public class DespesaService {
     }
 
     @Transactional
-    public DespesaDTO cadastrar(DespesaRequest despesaRequest) throws DespesaDuplicadaException {
-        checarSeExisteNoMesmoMes(despesaRequest);
-        Despesa despesaSalva = despesaRepository.save(despesaMapper.toEntity(despesaRequest));
-        return despesaMapper.toDTO(despesaSalva);
+    public Despesa cadastrar(Despesa despesa) throws DespesaDuplicadaException {
+        if (existeNoMesmoMes(despesa)) {
+            throw new DespesaDuplicadaException();
+        }
+        return despesaRepository.save(despesa);
     }
 
     @Transactional
     public DespesaDTO atualizar(Long id, DespesaRequest despesaRequest) throws DespesaNaoEncontradaException {
-        Despesa despesaBuscada = checarSeExistePorId(id);
+        Despesa despesaBuscada = buscarPorId(id);
         despesaBuscada.setDescricao(despesaRequest.getDescricao());
         despesaBuscada.setValor(despesaRequest.getValor());
         despesaBuscada.setData(despesaRequest.getData());
@@ -77,22 +76,11 @@ public class DespesaService {
 
     @Transactional
     public void deletar(Long id) throws DespesaNaoEncontradaException {
-        checarSeExistePorId(id);
-        despesaRepository.deleteById(id);
+        despesaRepository.delete(buscarPorId(id));
     }
 
-    private Despesa checarSeExistePorId(Long id) {
-        Optional<Despesa> despesaBuscada = despesaRepository.findById(id);
-        if (despesaBuscada.isPresent()) {
-            return despesaBuscada.get();
-        }
-        throw new DespesaNaoEncontradaException();
-    }
-
-    private void checarSeExisteNoMesmoMes(DespesaRequest despesaRequest) {
-        Optional<Despesa> despesaBuscada = despesaRepository.findByDescricaoIgnoreCase(despesaRequest.getDescricao());
-        if (despesaBuscada.isPresent() && despesaBuscada.get().getData().getMonth() == despesaRequest.getData().getMonth()) {
-            throw new DespesaDuplicadaException();
-        }
+    private boolean existeNoMesmoMes(Despesa despesa) {
+        Optional<Despesa> despesaBuscada = despesaRepository.findByDescricaoIgnoreCase(despesa.getDescricao());
+        return despesaBuscada.isPresent() && (despesaBuscada.get().getData().getMonth() == despesa.getData().getMonth());
     }
 }
